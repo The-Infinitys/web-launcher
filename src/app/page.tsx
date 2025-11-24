@@ -1,6 +1,7 @@
-  "use client";
+"use client";
 
 import AppList from "./components/AppList";
+import NewApp from "./components/NewApp";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
         >
           <h1 className="responsive-title">Web Launcher</h1>
         </div>
+        <NewApp />
         <div id="apps" className="w-full mt-8">
           <AppList />
         </div>
