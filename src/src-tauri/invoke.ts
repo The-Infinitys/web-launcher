@@ -3,7 +3,6 @@ import { invoke } from "@tauri-apps/api/core";
 export async function getFile(path: string): Promise<string> {
   // Support both snake_case and camelCase keys in case Tauri expects a different key name
   return await invoke<string>("get_file", {
-    relative_path: path,
     relativePath: path,
   });
 }
@@ -13,7 +12,6 @@ export async function listDir(
 ): Promise<Array<{ name: string; type: string }>> {
   // Support both snake_case and camelCase keys in case Tauri expects a different key name
   return await invoke<Array<{ name: string; type: string }>>("list_dir", {
-    relative_path: path,
     relativePath: path,
   });
 }
@@ -29,5 +27,11 @@ export async function exec(
 
 export async function ensureDir(path: string): Promise<void> {
   // call the Rust `create_dir` command; support both key variants
-  await invoke<void>("create_dir", { relative_path: path, relativePath: path });
+  await invoke<void>("create_dir", { relativePath: path });
+}
+export async function writeFile(path: string, content: string): Promise<void> {
+  await invoke<void>("write_file", {
+    relativePath: path,
+    content: content,
+  });
 }

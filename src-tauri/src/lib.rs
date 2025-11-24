@@ -124,6 +124,24 @@ fn get_file(app_handle: AppHandle, relative_path: String) -> Result<String, Stri
 }
 
 #[tauri::command]
+fn write_file(app_handle: AppHandle, relative_path: String, content: String) -> Result<(), String> {
+    let base_dir = get_base_dir(app_handle)?;
+    let target_path = base_dir.join(&relative_path);
+
+    // ファイルが存在するディレクトリを取得
+    if let Some(parent_dir) = target_path.parent() {
+        // 親ディレクトリが存在しない場合、作成を試みる
+        if !parent_dir.exists() {
+            fs::create_dir_all(parent_dir).map_err(|e| {
+                format!("Failed to create directory {}: {}", parent_dir.display(), e)
+            })?;
+        }
+    }
+
+    fs::write(target_path, content).map_err(|e| format!("Failed to write file: {}", e))?;
+    Ok(())
+}
+#[tauri::command]
 fn create_dir(app_handle: AppHandle, relative_path: String) -> Result<(), String> {
     let base_dir = get_base_dir(app_handle)?;
     let target_path = if relative_path.is_empty() {
@@ -132,7 +150,8 @@ fn create_dir(app_handle: AppHandle, relative_path: String) -> Result<(), String
         base_dir.join(&relative_path)
     };
 
-    fs::create_dir_all(&target_path).map_err(|e| format!("Failed to create dir {}: {}", target_path.display(), e))?;
+    fs::create_dir_all(&target_path)
+        .map_err(|e| format!("Failed to create dir {}: {}", target_path.display(), e))?;
     Ok(())
 }
 
