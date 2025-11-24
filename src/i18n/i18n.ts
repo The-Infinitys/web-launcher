@@ -9,7 +9,7 @@ export type Locale = keyof typeof resources;
 export function detectLocaleFromNavigator(): Locale {
   if (typeof navigator === "undefined") return "ja";
   const lang = (navigator.language || navigator.languages?.[0] || "ja").split(
-    ","
+    ",",
   )[0];
   const tag = lang.split("-")[0].toLowerCase();
   if (tag === "en") return "en";
@@ -52,7 +52,7 @@ export function initI18n(key?: string, lang?: Locale) {
       throw new Error(`Locale resources not found for '${l}'`);
     if (!Object.prototype.hasOwnProperty.call(localeResources, key)) {
       throw new Error(
-        `Resource namespace '${key}' not found for locale '${l}'`
+        `Resource namespace '${key}' not found for locale '${l}'`,
       );
     }
     const resPart = localeResources[

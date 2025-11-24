@@ -9,7 +9,7 @@ export async function getFile(path: string): Promise<string> {
 }
 
 export async function listDir(
-  path: string
+  path: string,
 ): Promise<Array<{ name: string; type: string }>> {
   // Support both snake_case and camelCase keys in case Tauri expects a different key name
   return await invoke<Array<{ name: string; type: string }>>("list_dir", {
@@ -22,7 +22,7 @@ export type ExecResult = { stdout: string; stderr: string; code: number };
 
 export async function exec(
   name: string,
-  args: string[] = []
+  args: string[] = [],
 ): Promise<ExecResult> {
   return await invoke<ExecResult>("exec", { name, args });
 }

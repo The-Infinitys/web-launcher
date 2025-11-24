@@ -29,7 +29,7 @@ export default function AppList() {
     async function walkDir(rel: string) {
       try {
         const entries: Array<{ name: string; type: string }> = await listDir(
-          rel
+          rel,
         );
         for (const entry of entries) {
           if (entry.type === "Directory") {

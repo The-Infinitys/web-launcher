@@ -1,0 +1,19 @@
+# Next.js のビルド・キャッシュ関連
+.next
+out
+
+# Node.js の依存関係
+node_modules
+
+# Tauri 関連
+src-tauri/target
+src-tauri/node_modules
+# もし src-tauri 内で別の package.json を持っている場合、その node_modules も除外
+
+# macOS の一時ファイル
+.DS_Store
+
+# エディタやOSごとの設定・キャッシュ
+.vscode
+npm-debug.log
+yarn-error.log
