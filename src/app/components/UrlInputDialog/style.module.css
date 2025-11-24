@@ -1,0 +1,95 @@
+/* src/app/components/UrlInputDialog/style.module.css */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: var(--background-color); /* Assuming a CSS variable for background */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: var(--text-color); /* Assuming a CSS variable for text color */
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color); /* Assuming a CSS variable for border color */
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-background-color); /* Assuming input specific background */
+  color: var(--text-color);
+}
+
+.input::placeholder {
+  color: var(--placeholder-color); /* Assuming a CSS variable for placeholder color */
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.primaryButton {
+  background-color: var(--primary-button-background); /* Custom property */
+  color: var(--primary-button-text); /* Custom property */
+  border: none;
+}
+
+.primaryButton:hover {
+  background-color: var(--primary-button-hover-background); /* Custom property */
+}
+
+.secondaryButton {
+  background-color: var(--secondary-button-background); /* Custom property */
+  color: var(--secondary-button-text); /* Custom property */
+  border: 1px solid var(--secondary-button-border); /* Custom property */
+}
+
+.secondaryButton:hover {
+  background-color: var(--secondary-button-hover-background); /* Custom property */
+}
+
+/* Define some common variables, if not already defined globally */
+:root {
+  --background-color: #1a1a1a;
+  --text-color: #f0f0f0;
+  --border-color: #444;
+  --input-background-color: #333;
+  --placeholder-color: #888;
+  --primary-button-background: #007bff;
+  --primary-button-text: #fff;
+  --primary-button-hover-background: #0056b3;
+  --secondary-button-background: #6c757d;
+  --secondary-button-text: #fff;
+  --secondary-button-border: #6c757d;
+  --secondary-button-hover-background: #5a6268;
+}

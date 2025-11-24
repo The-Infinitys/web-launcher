@@ -7,5 +7,17 @@
   "noapps_add": "新しいアプリを追加",
   "new_app": "新しいアプリ",
   "load_failed": "読み込みに失敗しました",
-  "name_unknown": "不明なアプリ"
+  "name_unknown": "不明なアプリ",
+  "input_url_dialog_title": "新しいアプリケーションを追加",
+  "input_url_placeholder": "アプリケーションのURLを入力してください (例: https://example.com)",
+  "get_info": "情報を取得",
+  "cancel": "キャンセル",
+  "edit_app_dialog_title": "アプリケーションの詳細を編集",
+  "app_name": "名前",
+  "app_url": "URL",
+  "app_icon": "アイコンURL",
+  "app_icon_placeholder": "アイコンのURLを入力してください (任意)",
+  "app_description": "説明",
+  "app_description_placeholder": "説明を入力してください (任意)",
+  "add_app": "アプリケーションを追加"
 }

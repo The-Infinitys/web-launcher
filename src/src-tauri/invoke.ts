@@ -1,5 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 
+// AppInfo型を定義 (RustのAppInfo構造体に対応)
+export interface AppInfo {
+  name: string;
+  url: string;
+  icon: string | null;
+  description: string | null;
+}
+
 export async function getFile(path: string): Promise<string> {
   // Support both snake_case and camelCase keys in case Tauri expects a different key name
   return await invoke<string>("get_file", {
@@ -35,3 +43,9 @@ export async function writeFile(path: string, content: string): Promise<void> {
     content: content,
   });
 }
+
+// 新しい関数を追加
+export async function getAppInfoFromUrl(url: string): Promise<AppInfo> {
+  return await invoke<AppInfo>("get_app_info_from_url", { url });
+}
+

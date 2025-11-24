@@ -1,42 +1,70 @@
 "use client";
 
-import { useEffect } from "react";
-import { ensureDir } from "@/src-tauri/invoke";
+import { useState, useEffect } from 'react';
+import Image from "next/image";
 import AppList from "./components/AppList";
 import NewApp from "./components/NewApp";
-import style from "./page.module.css";
+import UrlInputDialog from "./components/UrlInputDialog";
+import AppEditForm from "./components/AppEditForm"; // 追加
+import { getAppInfoFromUrl, AppInfo } from "@/src-tauri/invoke";
+
 export default function Home() {
+  const [isUrlInputDialogOpen, setIsUrlInputDialogOpen] = useState(false);
+  const [appInfoToEdit, setAppInfoToEdit] = useState<AppInfo | null>(null);
+
   useEffect(() => {
-    (async () => {
-      try {
-        // ensure base directory and apps subdirectory exist
-        await ensureDir("");
-        await ensureDir("apps");
-      } catch (e) {
-        // fail silently for now; log to console
-        console.error("failed to ensure directories", e);
-      }
-    })();
+    const handleOpenDialog = () => setIsUrlInputDialogOpen(true);
+    document.addEventListener('open-url-input-dialog', handleOpenDialog);
+    return () => {
+      document.removeEventListener('open-url-input-dialog', handleOpenDialog);
+    };
   }, []);
+
+  const handleUrlSubmit = async (url: string) => {
+    console.log("URL Submitted:", url);
+    try {
+      const appInfo = await getAppInfoFromUrl(url);
+      console.log("App Info received:", appInfo);
+      setAppInfoToEdit(appInfo);
+      setIsUrlInputDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to get app info:", error);
+      alert(`Failed to get app info: ${error}`);
+    }
+  };
+
+  const handleAppAdd = (appInfo: AppInfo) => {
+    console.log("App added:", appInfo);
+    // TODO: アプリをリストに追加するロジック（永続化など）
+    setAppInfoToEdit(null); // 編集フォームを閉じる
+  };
+
+  const handleAppEditCancel = () => {
+    setAppInfoToEdit(null); // 編集フォームを閉じる
+  };
+
   return (
-    <div className="logo-bg flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main
-        className={
-          "relative z-10 flex w-full max-w-3xl flex-col items-center py-12 px-16" +
-          style["main"]
-        }
-      >
-        <div
-          id="logo"
-          className="w-full flex flex-col items-center justify-start mt-8"
-        >
-          <h1 className="responsive-title">Web Launcher</h1>
-        </div>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      {/* ... 既存のコンテンツ ... */}
+
+      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
+        <AppList />
         <NewApp />
-        <div id="apps" className="w-full mt-8">
-          <AppList />
-        </div>
-      </main>
-    </div>
+      </div>
+
+      <UrlInputDialog
+        isOpen={isUrlInputDialogOpen}
+        onClose={() => setIsUrlInputDialogOpen(false)}
+        onSubmit={handleUrlSubmit}
+      />
+
+      {appInfoToEdit && ( // appInfoToEditがある場合にAppEditFormをレンダリング
+        <AppEditForm
+          appInfo={appInfoToEdit}
+          onAdd={handleAppAdd}
+          onCancel={handleAppEditCancel}
+        />
+      )}
+    </main>
   );
 }

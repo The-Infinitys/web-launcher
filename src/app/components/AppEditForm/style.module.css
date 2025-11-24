@@ -1,0 +1,128 @@
+/* src/app/components/AppEditForm/style.module.css */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: var(--background-color);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 600px; /* 少し広めに */
+  max-height: 90vh; /* 高さ制限を追加 */
+  overflow-y: auto; /* フォームが長い場合にスクロール */
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-background-color);
+  color: var(--text-color);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--placeholder-color);
+}
+
+.iconPreview {
+  margin-bottom: 1rem;
+  text-align: center;
+  /* 画像のスタイル調整 */
+}
+
+.iconPreview img {
+  border-radius: 8px; /* 角を丸くする */
+  background-color: #ffffff; /* アイコンの背景色 */
+  padding: 5px; /* アイコンと枠の間に余白 */
+  display: inline-block; /* 中央揃えのため */
+}
+
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.primaryButton {
+  background-color: var(--primary-button-background);
+  color: var(--primary-button-text);
+  border: none;
+}
+
+.primaryButton:hover {
+  background-color: var(--primary-button-hover-background);
+}
+
+.secondaryButton {
+  background-color: var(--secondary-button-background);
+  color: var(--secondary-button-text);
+  border: 1px solid var(--secondary-button-border);
+}
+
+.secondaryButton:hover {
+  background-color: var(--secondary-button-hover-background);
+}
+
+/* Define some common variables, if not already defined globally */
+:root {
+  --background-color: #1a1a1a;
+  --text-color: #f0f0f0;
+  --border-color: #444;
+  --input-background-color: #333;
+  --placeholder-color: #888;
+  --primary-button-background: #007bff;
+  --primary-button-text: #fff;
+  --primary-button-hover-background: #0056b3;
+  --secondary-button-background: #6c757d;
+  --secondary-button-text: #fff;
+  --secondary-button-border: #6c757d;
+  --secondary-button-hover-background: #5a6268;
+}

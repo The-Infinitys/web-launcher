@@ -7,5 +7,17 @@
   "noapps_add": "Add new application",
   "new_app": "New App",
   "load_failed": "Failed to load",
-  "name_unknown": "Unknown App"
+  "name_unknown": "Unknown App",
+  "input_url_dialog_title": "Add New Application",
+  "input_url_placeholder": "Enter application URL (e.g., https://example.com)",
+  "get_info": "Get Info",
+  "cancel": "Cancel",
+  "edit_app_dialog_title": "Edit Application Details",
+  "app_name": "Name",
+  "app_url": "URL",
+  "app_icon": "Icon URL",
+  "app_icon_placeholder": "Enter icon URL (optional)",
+  "app_description": "Description",
+  "app_description_placeholder": "Enter description (optional)",
+  "add_app": "Add Application"
 }
