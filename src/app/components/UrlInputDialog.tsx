@@ -11,7 +11,11 @@ interface UrlInputDialogProps {
   onSubmit: (url: string) => void;
 }
 
-export default function UrlInputDialog({ isOpen, onClose, onSubmit }: UrlInputDialogProps) {
+export default function UrlInputDialog({
+  isOpen,
+  onClose,
+  onSubmit,
+}: UrlInputDialogProps) {
   const { t } = initI18n();
   const [url, setUrl] = useState("");
 
@@ -45,7 +49,11 @@ export default function UrlInputDialog({ isOpen, onClose, onSubmit }: UrlInputDi
             required
           />
           <div className={styles.actions}>
-            <button type="button" onClick={handleCancel} className={styles.secondaryButton}>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className={styles.secondaryButton}
+            >
               {t("cancel")}
             </button>
             <button type="submit" className={styles.primaryButton}>

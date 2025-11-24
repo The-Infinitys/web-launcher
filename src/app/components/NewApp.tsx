@@ -10,7 +10,7 @@ export default function NewApp() {
 
   const handleNewAppClick = () => {
     // カスタムイベントをディスパッチして、ダイアログを開く
-    document.dispatchEvent(new CustomEvent('open-url-input-dialog'));
+    document.dispatchEvent(new CustomEvent("open-url-input-dialog"));
   };
 
   return (

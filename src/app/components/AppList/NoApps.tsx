@@ -1,5 +1,4 @@
 import { initI18n } from "@/i18n/i18n";
-import React from "react"; // Reactをインポート
 import styles from "./style.module.css";
 export default function NoApps() {
   const { t } = initI18n();

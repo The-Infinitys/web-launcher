@@ -13,7 +13,11 @@ interface AppEditFormProps {
   onCancel: () => void;
 }
 
-export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormProps) {
+export default function AppEditForm({
+  appInfo,
+  onAdd,
+  onCancel,
+}: AppEditFormProps) {
   const { t } = initI18n();
   const [editedAppInfo, setEditedAppInfo] = useState<AppInfo>(appInfo);
 
@@ -22,7 +26,9 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
     setEditedAppInfo(appInfo);
   }, [appInfo]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setEditedAppInfo((prev) => ({ ...prev, [name]: value }));
   };
@@ -38,7 +44,9 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
         <h2 className={styles.title}>{t("edit_app_dialog_title")}</h2>
         <form onSubmit={handleAddClick}>
           <div className={styles.formGroup}>
-            <label htmlFor="name" className={styles.label}>{t("app_name")}</label>
+            <label htmlFor="name" className={styles.label}>
+              {t("app_name")}
+            </label>
             <input
               type="text"
               id="name"
@@ -51,7 +59,9 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="url" className={styles.label}>{t("app_url")}</label>
+            <label htmlFor="url" className={styles.label}>
+              {t("app_url")}
+            </label>
             <input
               type="url"
               id="url"
@@ -64,10 +74,17 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="icon" className={styles.label}>{t("app_icon")}</label>
+            <label htmlFor="icon" className={styles.label}>
+              {t("app_icon")}
+            </label>
             {editedAppInfo.icon && (
               <div className={styles.iconPreview}>
-                <Image src={editedAppInfo.icon} alt="App Icon" width={64} height={64} />
+                <Image
+                  src={editedAppInfo.icon}
+                  alt="App Icon"
+                  width={64}
+                  height={64}
+                />
               </div>
             )}
             <input
@@ -82,7 +99,9 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="description" className={styles.label}>{t("app_description")}</label>
+            <label htmlFor="description" className={styles.label}>
+              {t("app_description")}
+            </label>
             <textarea
               id="description"
               name="description"
@@ -95,7 +114,11 @@ export default function AppEditForm({ appInfo, onAdd, onCancel }: AppEditFormPro
           </div>
 
           <div className={styles.actions}>
-            <button type="button" onClick={onCancel} className={styles.secondaryButton}>
+            <button
+              type="button"
+              onClick={onCancel}
+              className={styles.secondaryButton}
+            >
               {t("cancel")}
             </button>
             <button type="submit" className={styles.primaryButton}>

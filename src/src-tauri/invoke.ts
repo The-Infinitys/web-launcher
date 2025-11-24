@@ -48,4 +48,3 @@ export async function writeFile(path: string, content: string): Promise<void> {
 export async function getAppInfoFromUrl(url: string): Promise<AppInfo> {
   return await invoke<AppInfo>("get_app_info_from_url", { url });
 }
-

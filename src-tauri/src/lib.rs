@@ -1,10 +1,9 @@
+use reqwest::Url;
+use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
-use std::collections::HashMap;
-use reqwest::Url;
-use scraper::{Html, Selector};
 
 // アプリケーション情報を格納するための構造体
 #[derive(Debug, Serialize, Deserialize)]
@@ -189,80 +188,141 @@ fn create_dir(app_handle: AppHandle, relative_path: String) -> Result<(), String
     Ok(())
 }
 
+// ... (既存のコードは省略)
+
+// ⬇️ 修正後の get_app_info_from_url コマンド ⬇️
 #[tauri::command]
 async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
     let parsed_url = Url::parse(&url).map_err(|e| format!("Invalid URL: {}", e))?;
 
     let client = reqwest::Client::new();
-    let res = client.get(&url).send().await.map_err(|e| format!("Failed to fetch URL: {}", e))?;
-    let body = res.text().await.map_err(|e| format!("Failed to read response body: {}", e))?;
+    let res = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to fetch URL: {}", e))?;
+    // body は非同期タスク内で複数回使用されるため、ここでは String のまま保持
+    let body = res
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
 
-    let document = Html::parse_document(&body);
-
-    // 1. 名前 (Title or Manifest name)
-    let mut app_name = "Unknown App".to_string();
-    let title_selector = Selector::parse("title").unwrap();
-    if let Some(title_element) = document.select(&title_selector).next() {
-        app_name = title_element.text().collect::<String>().trim().to_string();
-    }
-
-    // 2. アイコン
-    let mut app_icon: Option<String> = None;
-    let icon_selector = Selector::parse("link[rel='icon'], link[rel='shortcut icon'], link[rel='apple-touch-icon']").unwrap();
-    for link_element in document.select(&icon_selector) {
-        if let Some(href) = link_element.value().attr("href") {
-            // 絶対URLに変換
-            if let Ok(icon_absolute_url) = parsed_url.join(href) {
-                app_icon = Some(icon_absolute_url.to_string());
-                break; // 最初のアイコンを見つけたら終了
+    // 1. HTMLパース (scraper::Html) - ページ情報取得
+    // body と parsed_url のクローンを作成し、ブロッキングタスクにムーブする
+    let (app_name, app_icon, app_description) = tokio::task::spawn_blocking({
+        let parsed_url = parsed_url.clone();
+        let body_clone_1 = body.clone(); // 1回目のパース用
+        move || {
+            let document = Html::parse_document(&body_clone_1);
+            let mut app_name = "Unknown App".to_string();
+            let mut app_icon: Option<String> = None;
+            let mut app_description: Option<String> = None;
+            
+            // ... (名前、アイコン、説明の抽出ロジックは省略せずに実行) ...
+            
+            // 1. 名前 (Title)
+            let title_selector = Selector::parse("title").unwrap();
+            if let Some(title_element) = document.select(&title_selector).next() {
+                app_name = title_element.text().collect::<String>().trim().to_string();
             }
-        }
-    }
 
-    // 3. 説明 (Meta description or Manifest description)
-    let mut app_description: Option<String> = None;
-    let meta_description_selector = Selector::parse("meta[name='description']").unwrap();
-    if let Some(meta_element) = document.select(&meta_description_selector).next() {
-        if let Some(content) = meta_element.value().attr("content") {
-            app_description = Some(content.to_string());
-        }
-    }
-
-    // 4. PWAマニフェストの解析
-    let manifest_selector = Selector::parse("link[rel='manifest']").unwrap();
-    if let Some(manifest_element) = document.select(&manifest_selector).next() {
-        if let Some(href) = manifest_element.value().attr("href") {
-            if let Ok(manifest_absolute_url) = parsed_url.join(href) {
-                let manifest_res = client.get(manifest_absolute_url.as_str()).send().await.map_err(|e| format!("Failed to fetch manifest: {}", e))?;
-                let manifest_json: WebManifest = manifest_res.json().await.map_err(|e| format!("Failed to parse manifest JSON: {}", e))?;
-
-                if let Some(name) = manifest_json.name.or(manifest_json.short_name) {
-                    app_name = name;
-                }
-                if let Some(description) = manifest_json.description {
-                    app_description = Some(description);
-                }
-                if let Some(icons) = manifest_json.icons {
-                    // 最も適切なアイコン（例えば、最も大きいアイコン）を選択
-                    if let Some(best_icon) = icons.iter().max_by_key(|icon| {
-                        icon.sizes.as_ref().and_then(|s| {
-                            s.split('x').next()?.parse::<u32>().ok()
-                        }).unwrap_or(0)
-                    }) {
-                        if let Ok(icon_url_from_manifest) = manifest_absolute_url.join(&best_icon.src) {
-                            app_icon = Some(icon_url_from_manifest.to_string());
-                        }
+            // 2. アイコン
+            let icon_selector = Selector::parse(
+                "link[rel='icon'], link[rel='shortcut icon'], link[rel='apple-touch-icon']",
+            )
+            .unwrap();
+            for link_element in document.select(&icon_selector) {
+                if let Some(href) = link_element.value().attr("href") {
+                    if let Ok(icon_absolute_url) = parsed_url.join(href) {
+                        app_icon = Some(icon_absolute_url.to_string());
+                        break;
                     }
+                }
+            }
+
+            // 3. 説明 (Meta description)
+            let meta_description_selector = Selector::parse("meta[name='description']").unwrap();
+            if let Some(meta_element) = document.select(&meta_description_selector).next() {
+                if let Some(content) = meta_element.value().attr("content") {
+                    app_description = Some(content.to_string());
+                }
+            }
+
+            (app_name, app_icon, app_description)
+        }
+    })
+    .await
+    .map_err(|e| format!("Failed to run blocking task (info extraction): {}", e))?;
+
+
+    // 2. HTMLパース (scraper::Html) - マニフェストURL取得
+    // body の新しいクローンと parsed_url のクローンを作成し、ブロッキングタスクにムーブする
+    let manifest_url_result: Result<Option<Url>, String> = tokio::task::spawn_blocking({
+        let parsed_url = parsed_url.clone();
+        let body_clone_2 = body.clone(); // 2回目のパース用
+        move || {
+            let document = Html::parse_document(&body_clone_2);
+            let manifest_selector = Selector::parse("link[rel='manifest']").unwrap();
+
+            if let Some(manifest_element) = document.select(&manifest_selector).next() {
+                if let Some(href) = manifest_element.value().attr("href") {
+                    if let Ok(url) = parsed_url.join(href) {
+                        return Ok(Some(url));
+                    }
+                }
+            }
+            Ok(None)
+        }
+    })
+    .await
+    .map_err(|e| format!("Failed to run blocking task (manifest URL extraction): {}", e))?;
+
+    let manifest_absolute_url = manifest_url_result?;
+
+
+    // 3. マニフェストJSONの取得と解析 (非同期処理)
+    let mut final_app_name = app_name;
+    let mut final_app_icon = app_icon;
+    let mut final_app_description = app_description;
+
+    if let Some(manifest_url) = manifest_absolute_url {
+        let manifest_res = client
+            .get(manifest_url.as_str())
+            .send()
+            .await
+            .map_err(|e| format!("Failed to fetch manifest: {}", e))?;
+        let manifest_json: WebManifest = manifest_res
+            .json()
+            .await
+            .map_err(|e| format!("Failed to parse manifest JSON: {}", e))?;
+
+        if let Some(name) = manifest_json.name.or(manifest_json.short_name) {
+            final_app_name = name;
+        }
+        if let Some(description) = manifest_json.description {
+            final_app_description = Some(description);
+        }
+        if let Some(icons) = manifest_json.icons {
+            if let Some(best_icon) = icons.iter().max_by_key(|icon| {
+                icon.sizes
+                    .as_ref()
+                    .and_then(|s| s.split('x').next()?.parse::<u32>().ok())
+                    .unwrap_or(0)
+            }) {
+                if let Ok(icon_url_from_manifest) =
+                    manifest_url.join(&best_icon.src)
+                {
+                    final_app_icon = Some(icon_url_from_manifest.to_string());
                 }
             }
         }
     }
 
     Ok(AppInfo {
-        name: app_name,
+        name: final_app_name,
         url: url,
-        icon: app_icon,
-        description: app_description,
+        icon: final_app_icon,
+        description: final_app_description,
     })
 }
 
@@ -285,9 +345,9 @@ pub fn run() {
             list_dir,
             get_file,
             create_dir,
-            write_file, // write_fileも登録
+            write_file,
             exec,
-            get_app_info_from_url // 新しく追加したコマンド
+            get_app_info_from_url // 修正したコマンド
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
