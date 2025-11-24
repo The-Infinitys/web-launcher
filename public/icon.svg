@@ -17,13 +17,6 @@
       <stop offset="1" stop-color="#f00" stop-opacity="1" />
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="45"
-    stroke-width="4"
-    style="stroke-width: 4; stroke: url(#gradient); fill: none"
-  />
   <ellipse
     cx="50"
     cy="50"
@@ -36,6 +29,13 @@
     cy="50"
     rx="20"
     ry="45"
+    style="stroke-width: 4; stroke: url(#gradient); fill: none"
+  />
+  <circle
+    cx="50"
+    cy="50"
+    r="45"
+    stroke-width="4"
     style="stroke-width: 4; stroke: url(#gradient); fill: none"
   />
 </svg>

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Load local font from public/fonts */
+@font-face {
+  font-family: "ChakraPetch";
+  src: url("/fonts/ChakraPetch-MediumItalic.ttf") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -23,4 +32,53 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Responsive title and icon used on the home page */
+.responsive-icon {
+  width: clamp(64px, 40vw, 100vw);
+  height: auto;
+  display: block;
+}
+
+.responsive-title {
+  font-size: clamp(18px, 6vw, 20vw);
+  min-width: 256px;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-family: "ChakraPetch", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Background logo using a positioned pseudo-element so we can control size and opacity */
+.logo-bg {
+  position: relative;
+  overflow: visible;
+}
+.logo-bg::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vmin;
+  aspect-ratio: 1 / 1;
+  background-image: url("/icon.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100% 100%;
+  opacity: 0.5;
+  /* Slight blur to soften the background logo */
+  -webkit-filter: blur(6px);
+  filter: blur(6px);
+  will-change: filter, opacity;
+  z-index: 0;
+}
+
+/* Ensure the main content sits above the background pseudo-element */
+.logo-bg > main {
+  position: relative;
+  z-index: 10;
 }
