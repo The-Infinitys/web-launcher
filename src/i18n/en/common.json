@@ -12,6 +12,7 @@
   "input_url_placeholder": "Enter application URL (e.g., https://example.com)",
   "get_info": "Get Info",
   "cancel": "Cancel",
+  "add_app_dialog_title": "Add New Application",
   "edit_app_dialog_title": "Edit Application Details",
   "app_name": "Name",
   "app_url": "URL",
@@ -19,5 +20,6 @@
   "app_icon_placeholder": "Enter icon URL (optional)",
   "app_description": "Description",
   "app_description_placeholder": "Enter description (optional)",
-  "add_app": "Add Application"
+  "add_app": "Add Application",
+  "save_changes": "Save Changes"
 }

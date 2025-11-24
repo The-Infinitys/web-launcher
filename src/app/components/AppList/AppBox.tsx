@@ -3,10 +3,11 @@ import { AppEntry } from "../AppList"; // AppListからAppEntryをインポー�
 
 interface AppBoxProps {
   info: AppEntry;
-  onEdit: (app: AppEntry) => void; // onEditプロップを追加
+  onEdit: (app: AppEntry) => void;
+  onDelete: (appId: string) => void; // onDeleteプロップを追加
 }
 
-export default function AppBox({ info, onEdit }: AppBoxProps) {
+export default function AppBox({ info, onEdit, onDelete }: AppBoxProps) {
   const { id, data } = info;
   const name = data.name ?? data.title ?? id;
   const description = data.description ?? "";
@@ -21,10 +22,17 @@ export default function AppBox({ info, onEdit }: AppBoxProps) {
       </div>
       <button
         type="button"
-        onClick={() => onEdit(info)} // 編集ボタンを追加
+        onClick={() => onEdit(info)}
         className={styles.editButton}
       >
         Edit
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(id)} // 削除ボタンを追加
+        className={styles.deleteButton}
+      >
+        Delete
       </button>
     </div>
   );

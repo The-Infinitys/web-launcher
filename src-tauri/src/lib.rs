@@ -359,6 +359,21 @@ async fn save_app_info(app_handle: AppHandle, app_info: AppInfo) -> Result<(), S
     )
 }
 
+// アプリケーションディレクトリを削除する新しいTauriコマンド
+#[tauri::command]
+async fn delete_app_dir(app_handle: AppHandle, id: String) -> Result<(), String> {
+    let base_dir = get_base_dir(app_handle.clone())?;
+    let app_dir = base_dir.join("apps").join(&id);
+
+    if app_dir.exists() {
+        fs::remove_dir_all(&app_dir)
+            .map_err(|e| format!("Failed to delete directory {}: {}", app_dir.display(), e))?;
+    } else {
+        return Err(format!("Application directory not found: {}", app_dir.display()));
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -381,7 +396,8 @@ pub fn run() {
             write_file,
             exec,
             get_app_info_from_url, // 修正したコマンド
-            save_app_info // 新しいコマンドを登録
+            save_app_info, // 新しいコマンドを登録
+            delete_app_dir // 新しいコマンドを登録
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

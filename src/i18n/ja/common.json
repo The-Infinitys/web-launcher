@@ -12,6 +12,7 @@
   "input_url_placeholder": "アプリケーションのURLを入力してください (例: https://example.com)",
   "get_info": "情報を取得",
   "cancel": "キャンセル",
+  "add_app_dialog_title": "新しいアプリケーションを追加",
   "edit_app_dialog_title": "アプリケーションの詳細を編集",
   "app_name": "名前",
   "app_url": "URL",
@@ -19,5 +20,6 @@
   "app_icon_placeholder": "アイコンのURLを入力してください (任意)",
   "app_description": "説明",
   "app_description_placeholder": "説明を入力してください (任意)",
-  "add_app": "アプリケーションを追加"
+  "add_app": "アプリケーションを追加",
+  "save_changes": "変更を保存"
 }

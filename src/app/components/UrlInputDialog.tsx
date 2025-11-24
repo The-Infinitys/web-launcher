@@ -1,7 +1,7 @@
 // src/app/components/UrlInputDialog.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { initI18n } from "@/i18n/i18n";
 import styles from "./UrlInputDialog/style.module.css";
 
@@ -11,6 +11,8 @@ interface UrlInputDialogProps {
   onSubmit: (url: string) => void;
 }
 
+const TRANSITION_DURATION = 300; // ms, matches CSS transition duration
+
 export default function UrlInputDialog({
   isOpen,
   onClose,
@@ -18,8 +20,21 @@ export default function UrlInputDialog({
 }: UrlInputDialogProps) {
   const { t } = initI18n();
   const [url, setUrl] = useState("");
+  const [shouldRender, setShouldRender] = useState(isOpen); // Controls actual DOM rendering
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true); // When dialog should be open, render immediately
+    } else {
+      // When dialog should be closed, wait for transition to finish before unmounting
+      const timeoutId = setTimeout(() => {
+        setShouldRender(false);
+      }, TRANSITION_DURATION);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null; // Only render if shouldRender is true
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +51,9 @@ export default function UrlInputDialog({
   };
 
   return (
-    <div className={styles.overlay}>
+    <div
+      className={`${styles.overlay} ${isOpen ? styles["overlay-visible"] : ""}`}
+    >
       <div className={styles.dialog}>
         <h2 className={styles.title}>{t("input_url_dialog_title")}</h2>
         <form onSubmit={handleSubmit}>

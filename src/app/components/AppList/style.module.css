@@ -3,11 +3,17 @@
 .appBox {
   display: flex;
   align-items: center;
+  width: 28rem;
   gap: 1rem;
   padding: 1rem;
   border-radius: 0.5rem;
   color: var(--foreground);
   background-color: var(--background-transparent);
+}
+
+.appBox > .flex-1 {
+  /* AppBox内のflex-1を持つdiv */
+  overflow: hidden; /* テキストの省略のために親要素のoverflowをhiddenに */
 }
 
 .noApps {
@@ -37,6 +43,10 @@
 .appDesc {
   font-size: 0.875rem; /* 14px */
   color: rgba(107, 114, 128, 1); /* muted */
+  white-space: nowrap; /* テキストを折り返さない */
+  overflow: hidden; /* はみ出した部分を隠す */
+  text-overflow: ellipsis; /* はみ出した部分を...で表示 */
+  max-width: 10rem; /* 親の幅を超えないようにする */
 }
 
 .primaryButton {
@@ -63,11 +73,32 @@
   border: 1px solid var(--app-list-edit-button-border); /* Custom property */
   transition: background-color 0.2s ease-in-out;
   margin-left: auto; /* 右端に配置 */
+  flex-shrink: 0; /* ボタンが縮小されないようにする */
 }
 
 .editButton:hover {
   background-color: var(
     --app-list-edit-button-hover-background
+  ); /* Custom property */
+}
+
+.deleteButton {
+  padding: 0.5rem 1rem;
+  background-color: var(
+    --app-list-delete-button-background
+  ); /* Custom property */
+  color: var(--app-list-delete-button-text); /* Custom property */
+  border-radius: 0.375rem;
+  cursor: pointer;
+  border: 1px solid var(--app-list-delete-button-border); /* Custom property */
+  transition: background-color 0.2s ease-in-out;
+  margin-left: 0.5rem; /* 編集ボタンとの間にスペース */
+  flex-shrink: 0; /* ボタンが縮小されないようにする */
+}
+
+.deleteButton:hover {
+  background-color: var(
+    --app-list-delete-button-hover-background
   ); /* Custom property */
 }
 
@@ -89,6 +120,10 @@
   --app-list-edit-button-text: #fff;
   --app-list-edit-button-border: #6c757d;
   --app-list-edit-button-hover-background: #5a6268;
+  --app-list-delete-button-background: #dc3545; /* Red for delete button */
+  --app-list-delete-button-text: #fff;
+  --app-list-delete-button-border: #dc3545;
+  --app-list-delete-button-hover-background: #c82333;
 }
 
 [data-theme="dark"] .appBox,
@@ -98,6 +133,10 @@
   --app-list-edit-button-text: #fff;
   --app-list-edit-button-border: #495057;
   --app-list-edit-button-hover-background: #343a40;
+  --app-list-delete-button-background: #bd2130;
+  --app-list-delete-button-text: #fff;
+  --app-list-delete-button-border: #bd2130;
+  --app-list-delete-button-hover-background: #a71d2a;
 }
 
 [data-theme="light"] .appBox,
@@ -107,4 +146,8 @@
   --app-list-edit-button-text: #fff;
   --app-list-edit-button-border: #007bff;
   --app-list-edit-button-hover-background: #0056b3;
+  --app-list-delete-button-background: #dc3545;
+  --app-list-delete-button-text: #fff;
+  --app-list-delete-button-border: #dc3545;
+  --app-list-delete-button-hover-background: #c82333;
 }

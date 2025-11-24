@@ -5,12 +5,18 @@ import AppList, { AppEntry } from "./components/AppList"; // AppEntryをイン�
 import NewApp from "./components/NewApp";
 import UrlInputDialog from "./components/UrlInputDialog";
 import AppEditForm from "./components/AppEditForm";
-import { getAppInfoFromUrl, AppInfo, saveAppInfo } from "@/src-tauri/invoke";
-import Image from "next/image";
+import LoadingSpinner from "./components/LoadingSpinner"; // LoadingSpinnerをインポート
+import {
+  getAppInfoFromUrl,
+  AppInfo,
+  saveAppInfo,
+  deleteAppDir,
+} from "@/src-tauri/invoke"; // deleteAppDirをインポート
 export default function Home() {
   const [isUrlInputDialogOpen, setIsUrlInputDialogOpen] = useState(false);
   const [appInfoToEdit, setAppInfoToEdit] = useState<AppInfo | null>(null);
   const [appChangeTrigger, setAppChangeTrigger] = useState(0); // アプリケーションリスト更新トリガー
+  const [isLoading, setIsLoading] = useState(false); // ローディング状態を追加
 
   useEffect(() => {
     const handleOpenDialog = () => setIsUrlInputDialogOpen(true);
@@ -22,7 +28,9 @@ export default function Home() {
 
   const handleUrlSubmit = async (url: string) => {
     console.log("URL Submitted:", url);
+    setIsLoading(true); // ローディング開始
     try {
+      // 新規作成時はIDがない状態でAppInfoを取得し、編集フォームで新規であることを示す
       const appInfo = await getAppInfoFromUrl(url);
       console.log("App Info received:", appInfo);
       setAppInfoToEdit(appInfo);
@@ -30,20 +38,25 @@ export default function Home() {
     } catch (error) {
       console.error("Failed to get app info:", error);
       alert(`Failed to get app info: ${error}`);
+    } finally {
+      setIsLoading(false); // ローディング終了
     }
   };
 
   const handleAppAdd = async (appInfo: AppInfo) => {
     // 非同期関数に変更
     console.log("App added:", appInfo);
+    setIsLoading(true); // ローディング開始
     try {
-      await saveAppInfo(appInfo); // アプリケーションを永続化
+      await saveAppInfo(appInfo); // アプリケーションを永続化（新規追加も編集もこれで対応）
       console.log("App saved successfully!");
       setAppInfoToEdit(null); // 編集フォームを閉じる
       setAppChangeTrigger((prev) => prev + 1); // AppListを更新するためにトリガーを増加
     } catch (error) {
       console.error("Failed to save app:", error);
       alert(`Failed to save app: ${error}`);
+    } finally {
+      setIsLoading(false); // ローディング終了
     }
   };
 
@@ -65,14 +78,32 @@ export default function Home() {
     setAppInfoToEdit(appInfo);
   };
 
+  const handleAppDelete = async (appId: string) => {
+    if (window.confirm("Are you sure you want to delete this application?")) {
+      setIsLoading(true); // ローディング開始
+      try {
+        await deleteAppDir(appId);
+        console.log("App deleted successfully!");
+        setAppChangeTrigger((prev) => prev + 1); // AppListを更新するためにトリガーを増加
+      } catch (error) {
+        console.error("Failed to delete app:", error);
+        alert(`Failed to delete app: ${error}`);
+      } finally {
+        setIsLoading(false); // ローディング終了
+      }
+    }
+  };
+
   return (
-    <main className="flex logo-bg min-h-screen flex-col items-center justify-between p-24">
-      <div className="responsive-title">
-        <h1>Web Launcher</h1>
-      </div>
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left mx-auto">
-        <AppList refreshTrigger={appChangeTrigger} onEdit={handleAppEdit} />{" "}
-        {/* トリガーとonEditを渡す */}
+    <main className="logo-bg main-layout">
+      <h1 className="responsive-title">Web Launcher</h1>
+      <div className="app-section">
+        {" "}
+        <AppList
+          refreshTrigger={appChangeTrigger}
+          onEdit={handleAppEdit}
+          onDelete={handleAppDelete} // onDeleteを渡す
+        />
         <NewApp />
       </div>
 
@@ -88,6 +119,8 @@ export default function Home() {
           onCancel={handleAppEditCancel}
         />
       )}
+
+      <LoadingSpinner isVisible={isLoading} />
     </main>
   );
 }

@@ -47,14 +47,48 @@ body {
 }
 
 .responsive-title {
-  font-size: clamp(18px, 6vw, 20vw);
-  min-width: 256px;
+  font-size: clamp(18px, 4vw, 5vw); /* 最大値を20vwから5vwに縮小 */
+  /* min-width: 256px; */ /* 削除または調整 */
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.5rem; /* 0.5remのまま、必要なら調整 */
   font-family: "ChakraPetch", system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-style: italic;
   font-weight: 500;
+}
+
+/* New classes to replace Tailwind utilities in page.tsx */
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6rem; /* Equivalent to p-24 */
+}
+
+.app-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8rem; /* Equivalent to mb-32 */
+  text-align: center;
+  margin-left: auto; /* Equivalent to mx-auto */
+  margin-right: auto; /* Equivalent to mx-auto */
+}
+
+/* Large screens (lg breakpoint is typically 1024px) */
+@media (min-width: 1024px) {
+  .app-section {
+    margin-bottom: 0; /* Equivalent to lg:mb-0 */
+    width: 100%; /* Equivalent to lg:w-full */
+    max-width: 64rem; /* Equivalent to lg:max-w-5xl */
+    text-align: left; /* Equivalent to lg:text-left */
+    /* lg:grid-cols-4 is not directly translatable to a flex container without knowing its intended use.
+       If it's meant for child elements, those children would need to be adjusted.
+       For now, we omit it as it applies to the container itself in page.tsx.
+    */
+  }
 }
 
 /* Background logo using a positioned pseudo-element so we can control size and opacity */
@@ -79,7 +113,7 @@ body {
   -webkit-filter: blur(6px);
   filter: blur(6px);
   will-change: filter, opacity;
-  z-index: 0;
+  z-index: -100;
 }
 
 /* Ensure the main content sits above the background pseudo-element */

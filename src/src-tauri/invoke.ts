@@ -54,3 +54,8 @@ export async function getAppInfoFromUrl(url: string): Promise<AppInfo> {
 export async function saveAppInfo(appInfo: AppInfo): Promise<void> {
   return await invoke<void>("save_app_info", { appInfo });
 }
+
+// delete_app_dirコマンドを呼び出す新しい関数
+export async function deleteAppDir(id: string): Promise<void> {
+  return await invoke<void>("delete_app_dir", { id });
+}

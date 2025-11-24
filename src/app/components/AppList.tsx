@@ -18,9 +18,14 @@ export type AppEntry = { id: string; data: AppData }; // AppEntryをエクスポ
 interface AppListProps {
   refreshTrigger: number; // refreshTriggerプロップを追加
   onEdit: (app: AppEntry) => void; // onEditプロップを追加
+  onDelete: (appId: string) => void; // onDeleteプロップを追加
 }
 
-export default function AppList({ refreshTrigger, onEdit }: AppListProps) {
+export default function AppList({
+  refreshTrigger,
+  onEdit,
+  onDelete,
+}: AppListProps) {
   const { t } = initI18n();
   const [apps, setApps] = useState<AppEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +100,7 @@ export default function AppList({ refreshTrigger, onEdit }: AppListProps) {
   return (
     <div className="grid grid-cols-1 gap-4">
       {apps.map((a) => (
-        <AppBox key={a.id} info={a} onEdit={onEdit} />
+        <AppBox key={a.id} info={a} onEdit={onEdit} onDelete={onDelete} />
       ))}
     </div>
   );

@@ -8,10 +8,12 @@ import { AppInfo } from "@/src-tauri/invoke";
 import styles from "./AppEditForm/style.module.css";
 
 interface AppEditFormProps {
-  appInfo: AppInfo;
+  appInfo: AppInfo | null; // appInfo can be null now
   onAdd: (appInfo: AppInfo) => void;
   onCancel: () => void;
 }
+
+const TRANSITION_DURATION = 300; // ms, matches CSS transition duration
 
 export default function AppEditForm({
   appInfo,
@@ -19,12 +21,30 @@ export default function AppEditForm({
   onCancel,
 }: AppEditFormProps) {
   const { t } = initI18n();
-  const [editedAppInfo, setEditedAppInfo] = useState<AppInfo>(appInfo);
+  // Initialize editedAppInfo only when appInfo is provided
+  const [editedAppInfo, setEditedAppInfo] = useState<AppInfo>(
+    appInfo || { id: "", name: "", url: "", icon: null, description: null }, // Provide a default empty AppInfo
+  );
+  const [shouldRender, setShouldRender] = useState(appInfo !== null); // Controls actual DOM rendering
 
   // appInfoが変更されたら、editedAppInfoを更新
   useEffect(() => {
-    setEditedAppInfo(appInfo);
+    if (appInfo) {
+      // If appInfo is not null, it means the dialog should be open
+      setShouldRender(true);
+      setEditedAppInfo(appInfo);
+    } else {
+      // If appInfo is null, it means the dialog should be closing
+      const timeoutId = setTimeout(() => {
+        setShouldRender(false);
+      }, TRANSITION_DURATION);
+      return () => clearTimeout(timeoutId);
+    }
   }, [appInfo]);
+
+  if (!shouldRender) return null; // Only render if shouldRender is true
+
+  const isEditing = editedAppInfo.id !== undefined && editedAppInfo.id !== ""; // idがあれば編集モード
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -39,9 +59,15 @@ export default function AppEditForm({
   };
 
   return (
-    <div className={styles.overlay}>
+    <div
+      className={`${styles.overlay} ${
+        appInfo !== null ? styles["overlay-visible"] : ""
+      }`}
+    >
       <div className={styles.dialog}>
-        <h2 className={styles.title}>{t("edit_app_dialog_title")}</h2>
+        <h2 className={styles.title}>
+          {isEditing ? t("edit_app_dialog_title") : t("add_app_dialog_title")}
+        </h2>
         <form onSubmit={handleAddClick}>
           <div className={styles.formGroup}>
             <label htmlFor="name" className={styles.label}>
@@ -122,7 +148,7 @@ export default function AppEditForm({
               {t("cancel")}
             </button>
             <button type="submit" className={styles.primaryButton}>
-              {t("add_app")}
+              {isEditing ? t("save_changes") : t("add_app")}
             </button>
           </div>
         </form>
