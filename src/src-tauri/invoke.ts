@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 // AppInfo型を定義 (RustのAppInfo構造体に対応)
 export interface AppInfo {
+  id: string; // idフィールドを追加
   name: string;
   url: string;
   icon: string | null;
@@ -47,4 +48,9 @@ export async function writeFile(path: string, content: string): Promise<void> {
 // 新しい関数を追加
 export async function getAppInfoFromUrl(url: string): Promise<AppInfo> {
   return await invoke<AppInfo>("get_app_info_from_url", { url });
+}
+
+// save_app_infoコマンドを呼び出す新しい関数
+export async function saveAppInfo(appInfo: AppInfo): Promise<void> {
+  return await invoke<void>("save_app_info", { appInfo });
 }

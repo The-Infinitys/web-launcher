@@ -1,15 +1,12 @@
 import styles from "./style.module.css";
+import { AppEntry } from "../AppList"; // AppListからAppEntryをインポート
 
-type AppData = {
-  name?: string;
-  title?: string;
-  description?: string;
-  icon?: string;
-  [k: string]: unknown;
-};
-type AppEntry = { id: string; data: AppData };
+interface AppBoxProps {
+  info: AppEntry;
+  onEdit: (app: AppEntry) => void; // onEditプロップを追加
+}
 
-export default function AppBox({ info }: { info: AppEntry }) {
+export default function AppBox({ info, onEdit }: AppBoxProps) {
   const { id, data } = info;
   const name = data.name ?? data.title ?? id;
   const description = data.description ?? "";
@@ -22,6 +19,13 @@ export default function AppBox({ info }: { info: AppEntry }) {
         <div className={styles.appTitle}>{name}</div>
         {description && <div className={styles.appDesc}>{description}</div>}
       </div>
+      <button
+        type="button"
+        onClick={() => onEdit(info)} // 編集ボタンを追加
+        className={styles.editButton}
+      >
+        Edit
+      </button>
     </div>
   );
 }

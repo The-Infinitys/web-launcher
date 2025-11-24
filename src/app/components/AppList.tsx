@@ -13,9 +13,14 @@ type AppData = {
   icon?: string;
   [k: string]: unknown;
 };
-type AppEntry = { id: string; data: AppData };
+export type AppEntry = { id: string; data: AppData }; // AppEntryをエクスポートする
 
-export default function AppList() {
+interface AppListProps {
+  refreshTrigger: number; // refreshTriggerプロップを追加
+  onEdit: (app: AppEntry) => void; // onEditプロップを追加
+}
+
+export default function AppList({ refreshTrigger, onEdit }: AppListProps) {
   const { t } = initI18n();
   const [apps, setApps] = useState<AppEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +32,8 @@ export default function AppList() {
     const appsDir = "apps"; // relative to ~/.web-launcher
 
     async function walkDir(rel: string) {
+      if (!mounted) return; // コンポーネントがアンマウントされていたら何もしない
+
       try {
         const entries: Array<{ name: string; type: string }> = await listDir(
           rel,
@@ -40,7 +47,10 @@ export default function AppList() {
               const raw: string = await getFile(filePath);
               const data = JSON.parse(raw);
               if (mounted) {
-                setApps((s) => [...s, { id: childRel, data }]);
+                // `id`フィールドを`AppInfo`構造体から取得するように変更
+                // ここでは`id`は`childRel`から取得できると仮定
+                const id = childRel.split("/").pop() || childRel; // 例: apps/xxx/application.json -> xxx
+                setApps((s) => [...s, { id: id, data }]);
               }
             } catch {
               // not necessarily an error - file may not exist; ignore
@@ -55,6 +65,10 @@ export default function AppList() {
     }
 
     (async () => {
+      if (!mounted) return;
+      setLoading(true); // ロード開始
+      setApps([]); // リストをクリア
+      setError(null); // エラーをクリア
       try {
         await walkDir(appsDir);
         if (mounted) setLoading(false);
@@ -69,7 +83,7 @@ export default function AppList() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [refreshTrigger]); // refreshTriggerを依存配列に追加
 
   if (loading) return <div>{t("apps_loading")}</div>;
   if (error) return <div className="text-red-600">{error}</div>;
@@ -81,7 +95,7 @@ export default function AppList() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {apps.map((a) => (
-        <AppBox key={a.id} info={a} />
+        <AppBox key={a.id} info={a} onEdit={onEdit} />
       ))}
     </div>
   );

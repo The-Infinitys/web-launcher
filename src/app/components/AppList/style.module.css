@@ -52,6 +52,25 @@
   border: none;
 }
 
+.editButton {
+  padding: 0.5rem 1rem;
+  background-color: var(
+    --app-list-edit-button-background
+  ); /* Custom property */
+  color: var(--app-list-edit-button-text); /* Custom property */
+  border-radius: 0.375rem;
+  cursor: pointer;
+  border: 1px solid var(--app-list-edit-button-border); /* Custom property */
+  transition: background-color 0.2s ease-in-out;
+  margin-left: auto; /* 右端に配置 */
+}
+
+.editButton:hover {
+  background-color: var(
+    --app-list-edit-button-hover-background
+  ); /* Custom property */
+}
+
 /* Dark mode overrides when `dark` class is present on an ancestor */
 .dark .appBox,
 .dark .noApps {
@@ -66,14 +85,26 @@
 .appBox,
 .noApps {
   --app-list-primary-button-background: #1f7aec; /* Default primary blue */
+  --app-list-edit-button-background: #6c757d; /* Gray for edit button */
+  --app-list-edit-button-text: #fff;
+  --app-list-edit-button-border: #6c757d;
+  --app-list-edit-button-hover-background: #5a6268;
 }
 
 [data-theme="dark"] .appBox,
 [data-theme="dark"] .noApps {
   --app-list-primary-button-background: #3a8ee6; /* Slightly lighter for dark mode */
+  --app-list-edit-button-background: #495057;
+  --app-list-edit-button-text: #fff;
+  --app-list-edit-button-border: #495057;
+  --app-list-edit-button-hover-background: #343a40;
 }
 
 [data-theme="light"] .appBox,
 [data-theme="light"] .noApps {
   --app-list-primary-button-background: #1f7aec; /* Original primary blue */
+  --app-list-edit-button-background: #007bff; /* Blue for light mode */
+  --app-list-edit-button-text: #fff;
+  --app-list-edit-button-border: #007bff;
+  --app-list-edit-button-hover-background: #0056b3;
 }

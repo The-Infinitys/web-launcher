@@ -4,14 +4,16 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
+use sha2::{Digest, Sha256}; // sha2クレートを追加
 
 // アプリケーション情報を格納するための構造体
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppInfo {
-    name: String,
-    url: String,
-    icon: Option<String>, // URL
-    description: Option<String>,
+    pub id: String, // idフィールドを追加
+    pub name: String,
+    pub url: String,
+    pub icon: Option<String>, // URL
+    pub description: Option<String>,
 }
 
 // PWAマニフェストの構造体（必要な部分のみ）
@@ -188,12 +190,15 @@ fn create_dir(app_handle: AppHandle, relative_path: String) -> Result<(), String
     Ok(())
 }
 
-// ... (既存のコードは省略)
-
 // ⬇️ 修正後の get_app_info_from_url コマンド ⬇️
 #[tauri::command]
 async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
     let parsed_url = Url::parse(&url).map_err(|e| format!("Invalid URL: {}", e))?;
+
+    // URLからIDを生成 (SHA256ハッシュ)
+    let mut hasher = Sha256::new();
+    hasher.update(&url);
+    let id = format!("{:x}", hasher.finalize());
 
     let client = reqwest::Client::new();
     let res = client
@@ -319,11 +324,39 @@ async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
     }
 
     Ok(AppInfo {
+        id, // 生成したIDを設定
         name: final_app_name,
         url: url,
         icon: final_app_icon,
         description: final_app_description,
     })
+}
+
+// アプリケーション情報をファイルに保存する新しいTauriコマンド
+#[tauri::command]
+async fn save_app_info(app_handle: AppHandle, app_info: AppInfo) -> Result<(), String> {
+    let base_dir = get_base_dir(app_handle.clone())?;
+    let app_dir = base_dir.join("apps").join(&app_info.id);
+    let file_path = app_dir.join("application.json");
+
+    // ディレクトリが存在しない場合は作成
+    fs::create_dir_all(&app_dir)
+        .map_err(|e| format!("Failed to create directory {}: {}", app_dir.display(), e))?;
+
+    // AppInfoをJSON文字列にシリアライズ
+    let json_content = serde_json::to_string_pretty(&app_info)
+        .map_err(|e| format!("Failed to serialize AppInfo to JSON: {}", e))?;
+
+    // ファイルに書き込む (既存のwrite_file関数を再利用)
+    write_file(
+        app_handle,
+        file_path
+            .strip_prefix(&base_dir)
+            .map_err(|e| format!("Failed to strip prefix from path: {}", e))?
+            .to_string_lossy()
+            .into_owned(),
+        json_content,
+    )
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -347,7 +380,8 @@ pub fn run() {
             create_dir,
             write_file,
             exec,
-            get_app_info_from_url // 修正したコマンド
+            get_app_info_from_url, // 修正したコマンド
+            save_app_info // 新しいコマンドを登録
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
