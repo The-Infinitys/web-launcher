@@ -1,7 +1,83 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import { initI18n } from "@/i18n/i18n";
+import AppBox from "./AppList/AppBox";
+import { listDir, getFile } from "@/src-tauri/invoke";
+
+type AppData = {
+  name?: string;
+  title?: string;
+  description?: string;
+  icon?: string;
+  [k: string]: unknown;
+};
+type AppEntry = { id: string; data: AppData };
 
 export default function AppList() {
-  const { t } = initI18n("", "en");
-  return <p>{t("app_not_fonud")}</p>;
+  const { t } = initI18n();
+  const [apps, setApps] = useState<AppEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const appsDir = "apps"; // relative to ~/.web-launcher
+
+    async function walkDir(rel: string) {
+      try {
+        const entries: Array<{ name: string; type: string }> = await listDir(
+          rel
+        );
+        for (const entry of entries) {
+          if (entry.type === "Directory") {
+            const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+            // try to read application.json in this directory
+            try {
+              const filePath = `${childRel}/application.json`;
+              const raw: string = await getFile(filePath);
+              const data = JSON.parse(raw);
+              if (mounted) {
+                setApps((s) => [...s, { id: childRel, data }]);
+              }
+            } catch {
+              // not necessarily an error - file may not exist; ignore
+            }
+            // recurse
+            await walkDir(childRel);
+          }
+        }
+      } catch (e) {
+        throw e;
+      }
+    }
+
+    (async () => {
+      try {
+        await walkDir(appsDir);
+        if (mounted) setLoading(false);
+      } catch (e) {
+        if (mounted) {
+          setError((e as Error).message || String(e));
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) return <div>{t("apps_not_found")}</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      {apps.map((a) => (
+        <AppBox key={a.id} info={a} />
+      ))}
+    </div>
+  );
 }

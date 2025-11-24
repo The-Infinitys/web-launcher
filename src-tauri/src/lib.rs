@@ -1,8 +1,7 @@
-use tauri::{Manager, AppHandle};
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::io;
 use serde::Serialize;
+use std::fs;
+use std::path::PathBuf;
+use tauri::{AppHandle, Manager};
 
 // 新しいTauriコマンドを定義
 #[tauri::command]
@@ -50,14 +49,21 @@ fn list_dir(app_handle: AppHandle, relative_path: String) -> Result<Vec<DirEntry
         return Err(format!("Path does not exist: {}", target_path.display()));
     }
     if !target_path.is_dir() {
-        return Err(format!("Path is not a directory: {}", target_path.display()));
+        return Err(format!(
+            "Path is not a directory: {}",
+            target_path.display()
+        ));
     }
 
     let mut entries_info = Vec::new();
-    for entry in fs::read_dir(target_path).map_err(|e| format!("Failed to read directory: {}", e))? {
+    for entry in
+        fs::read_dir(target_path).map_err(|e| format!("Failed to read directory: {}", e))?
+    {
         let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
         let file_name = entry.file_name().to_string_lossy().into_owned();
-        let file_type = entry.file_type().map_err(|e| format!("Failed to get file type: {}", e))?;
+        let file_type = entry
+            .file_type()
+            .map_err(|e| format!("Failed to get file type: {}", e))?;
 
         let entry_type = if file_type.is_file() {
             EntryType::File
@@ -92,11 +98,6 @@ fn get_file(app_handle: AppHandle, relative_path: String) -> Result<String, Stri
     fs::read_to_string(target_path).map_err(|e| format!("Failed to read file: {}", e))
 }
 
-fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    // web_launcher_dirの計算はget_web_launcher_dirコマンドに移譲
-    Ok(())
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -110,7 +111,6 @@ pub fn run() {
             }
             Ok(())
         })
-        .setup(setup)
         // 新しいコマンドを登録
         .invoke_handler(tauri::generate_handler![
             get_web_launcher_dir,
