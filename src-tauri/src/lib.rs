@@ -82,7 +82,32 @@ fn list_dir(app_handle: AppHandle, relative_path: String) -> Result<Vec<DirEntry
     }
     Ok(entries_info)
 }
+#[tauri::command]
+fn exec(name: String, args: Vec<String>) -> Result<ExecResult, String> {
+    use std::process::Command;
 
+    let output = Command::new(&name)
+        .args(&args)
+        .output()
+        .map_err(|e| format!("failed to spawn process '{}': {}", name, e))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    let code = output.status.code().unwrap_or(-1);
+
+    Ok(ExecResult {
+        stdout,
+        stderr,
+        code,
+    })
+}
+
+#[derive(Serialize)]
+struct ExecResult {
+    stdout: String,
+    stderr: String,
+    code: i32,
+}
 #[tauri::command]
 fn get_file(app_handle: AppHandle, relative_path: String) -> Result<String, String> {
     let base_dir = get_base_dir(app_handle)?;
@@ -96,6 +121,19 @@ fn get_file(app_handle: AppHandle, relative_path: String) -> Result<String, Stri
     }
 
     fs::read_to_string(target_path).map_err(|e| format!("Failed to read file: {}", e))
+}
+
+#[tauri::command]
+fn create_dir(app_handle: AppHandle, relative_path: String) -> Result<(), String> {
+    let base_dir = get_base_dir(app_handle)?;
+    let target_path = if relative_path.is_empty() {
+        base_dir
+    } else {
+        base_dir.join(&relative_path)
+    };
+
+    fs::create_dir_all(&target_path).map_err(|e| format!("Failed to create dir {}: {}", target_path.display(), e))?;
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -115,7 +153,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_web_launcher_dir,
             list_dir,
-            get_file
+            get_file,
+            create_dir,
+            exec
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

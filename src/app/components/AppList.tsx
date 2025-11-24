@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { initI18n } from "@/i18n/i18n";
 import AppBox from "./AppList/AppBox";
+import NoApps from "./AppList/NoApps";
 import { listDir, getFile } from "@/src-tauri/invoke";
 
 type AppData = {
@@ -70,8 +71,12 @@ export default function AppList() {
     };
   }, []);
 
-  if (loading) return <div>{t("apps_not_found")}</div>;
+  if (loading) return <div>{t("apps_loading")}</div>;
   if (error) return <div className="text-red-600">{error}</div>;
+
+  if (apps.length === 0) {
+    return <NoApps />;
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4">

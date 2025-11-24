@@ -1,6 +1,11 @@
 {
   "title": "Web Launcher",
   "apps_not_found": "アプリが見つかりませんでした。",
+  "apps_loading": "アプリを読み込み中...",
+  "noapps_title": "アプリが見つかりません",
+  "noapps_description": "新しいアプリを追加して開始しましょう。",
+  "noapps_add": "新しいアプリを追加",
+  "new_app": "新しいアプリ",
   "load_failed": "読み込みに失敗しました",
   "name_unknown": "不明なアプリ"
 }

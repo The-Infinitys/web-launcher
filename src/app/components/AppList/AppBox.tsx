@@ -1,3 +1,5 @@
+import styles from "./style.module.css";
+
 type AppData = {
   name?: string;
   title?: string;
@@ -14,17 +16,11 @@ export default function AppBox({ info }: { info: AppEntry }) {
   const icon = data.icon ?? "/icon.svg";
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded bg-white/80 dark:bg-black/60">
-      <img
-        src={icon}
-        alt={`${name} icon`}
-        className="w-12 h-12 object-contain"
-      />
+    <div className={`${styles.appBox} flex-1 border rounded`}>
+      <img src={icon} alt={`${name} icon`} className={styles.appIcon} />
       <div className="flex-1">
-        <div className="font-semibold text-lg">{name}</div>
-        {description && (
-          <div className="text-sm text-muted-foreground">{description}</div>
-        )}
+        <div className={styles.appTitle}>{name}</div>
+        {description && <div className={styles.appDesc}>{description}</div>}
       </div>
     </div>
   );

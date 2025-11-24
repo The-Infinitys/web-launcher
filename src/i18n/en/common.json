@@ -1,6 +1,11 @@
 {
   "title": "Web Launcher",
   "apps_not_found": "No applications were found.",
+  "apps_loading": "Loading applications...",
+  "noapps_title": "No applications found",
+  "noapps_description": "Add a new application to get started.",
+  "noapps_add": "Add new application",
+  "new_app": "New App",
   "load_failed": "Failed to load",
   "name_unknown": "Unknown App"
 }

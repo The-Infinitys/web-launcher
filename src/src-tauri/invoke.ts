@@ -17,3 +17,17 @@ export async function listDir(
     relativePath: path,
   });
 }
+
+export type ExecResult = { stdout: string; stderr: string; code: number };
+
+export async function exec(
+  name: string,
+  args: string[] = []
+): Promise<ExecResult> {
+  return await invoke<ExecResult>("exec", { name, args });
+}
+
+export async function ensureDir(path: string): Promise<void> {
+  // call the Rust `create_dir` command; support both key variants
+  await invoke<void>("create_dir", { relative_path: path, relativePath: path });
+}
