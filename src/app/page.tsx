@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { ensureDir } from "@/src-tauri/invoke";
 import AppList from "./components/AppList";
 import NewApp from "./components/NewApp";
-
+import style from "./page.module.css";
 export default function Home() {
   useEffect(() => {
     (async () => {
@@ -20,7 +20,12 @@ export default function Home() {
   }, []);
   return (
     <div className="logo-bg flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="relative z-10 flex w-full max-w-3xl flex-col items-center py-12 px-16">
+      <main
+        className={
+          "relative z-10 flex w-full max-w-3xl flex-col items-center py-12 px-16" +
+          style["main"]
+        }
+      >
         <div
           id="logo"
           className="w-full flex flex-col items-center justify-start mt-8"
