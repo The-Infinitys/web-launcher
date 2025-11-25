@@ -11,7 +11,8 @@ import {
   AppInfo,
   saveAppInfo,
   deleteAppDir,
-} from "@/src-tauri/invoke"; // deleteAppDirをインポート
+  saveLocalIcon, // saveLocalIconをインポート
+} from "@/src-tauri/invoke";
 export default function Home() {
   const [isUrlInputDialogOpen, setIsUrlInputDialogOpen] = useState(false);
   const [appInfoToEdit, setAppInfoToEdit] = useState<AppInfo | null>(null);
@@ -48,7 +49,18 @@ export default function Home() {
     console.log("App added:", appInfo);
     setIsLoading(true); // ローディング開始
     try {
-      await saveAppInfo(appInfo); // アプリケーションを永続化（新規追加も編集もこれで対応）
+      let updatedAppInfo = { ...appInfo }; // appInfoのコピーを作成
+
+      // ローカルファイルパスの場合、アイコンを保存
+      // `file://`で始まるパスはユーザーが選んだ元のファイルパス
+      // `/`で始まるパスは相対パスの可能性があり、これも処理対象とする
+      // TauriのAPIが返す `tauri://localhost/__tauri_assets__/` で始まるパスはすでに保存済みと見なす
+      if (updatedAppInfo.icon && (updatedAppInfo.icon.startsWith("/") || updatedAppInfo.icon.startsWith("file://"))) {
+        const savedIconPath = await saveLocalIcon(updatedAppInfo.id, updatedAppInfo.icon);
+        updatedAppInfo.icon = savedIconPath; // 保存されたパスで更新
+      }
+
+      await saveAppInfo(updatedAppInfo); // 更新されたappInfoを永続化（新規追加も編集もこれで対応）
       console.log("App saved successfully!");
       setAppInfoToEdit(null); // 編集フォームを閉じる
       setAppChangeTrigger((prev) => prev + 1); // AppListを更新するためにトリガーを増加

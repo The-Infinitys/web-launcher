@@ -113,6 +113,31 @@
   background-color: var(--secondary-button-hover-background);
 }
 
+.iconInputGroup {
+  display: flex;
+  gap: 0.5rem; /* 入力フィールドとボタンの間のスペース */
+  align-items: center; /* 垂直方向の中央揃え */
+}
+
+.iconInputGroup .input {
+  flex-grow: 1; /* 入力フィールドが利用可能なスペースを埋めるようにする */
+}
+
+.secondaryButtonFile {
+  padding: 0.75rem 1rem; /* パディングを調整 */
+  border-radius: 44px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  background-color: var(--secondary-button-background);
+  color: var(--secondary-button-text);
+  border: 1px solid var(--secondary-button-border);
+  white-space: nowrap; /* ボタン内のテキストが折り返されないようにする */
+}
+
+.secondaryButtonFile:hover {
+  background-color: var(--secondary-button-hover-background);
+}
 /* Custom properties for dialog elements, respecting data-theme */
 .dialog {
   --dialog-border-color: #444;

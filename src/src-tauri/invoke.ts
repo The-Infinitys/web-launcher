@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-
+import { open } from "@tauri-apps/plugin-dialog";
 // AppInfo型を定義 (RustのAppInfo構造体に対応)
 export interface AppInfo {
   id: string; // idフィールドを追加
@@ -58,4 +58,31 @@ export async function saveAppInfo(appInfo: AppInfo): Promise<void> {
 // delete_app_dirコマンドを呼び出す新しい関数
 export async function deleteAppDir(id: string): Promise<void> {
   return await invoke<void>("delete_app_dir", { id });
+}
+
+// select_icon_fileコマンドを呼び出す新しい関数
+export async function selectIconFile(): Promise<string | null> {
+  const selected = open({
+    multiple: false,
+    filters: [
+      {
+        name: "Icon",
+        extensions: ["svg", "png", "jpg", "jpeg", "webp"],
+      },
+      {
+        name: "All",
+        extensions: ["*"],
+      },
+    ],
+  });
+
+  return selected;
+}
+
+// save_local_iconコマンドを呼び出す新しい関数
+export async function saveLocalIcon(
+  appId: string,
+  sourcePath: string,
+): Promise<string> {
+  return await invoke<string>("save_local_icon", { appId, sourcePath });
 }

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { initI18n } from "@/i18n/i18n";
 import { AppInfo } from "@/src-tauri/invoke";
+import { selectIconFile } from "@/src-tauri/invoke"; // selectIconFileをインポート
 import styles from "./AppEditForm/style.module.css";
 
 interface AppEditFormProps {
@@ -58,6 +59,18 @@ export default function AppEditForm({
     onAdd(editedAppInfo);
   };
 
+  const handleSelectIconFile = async () => {
+    try {
+      const filePath = await selectIconFile();
+      if (filePath) {
+        setEditedAppInfo((prev) => ({ ...prev, icon: "file://" + filePath }));
+      }
+    } catch (error) {
+      console.error("Failed to select icon file:", error);
+      alert(`Failed to select icon file: ${error}`);
+    }
+  };
+
   return (
     <div
       className={`${styles.overlay} ${
@@ -105,23 +118,41 @@ export default function AppEditForm({
             </label>
             {editedAppInfo.icon && (
               <div className={styles.iconPreview}>
-                <Image
-                  src={editedAppInfo.icon}
-                  alt="App Icon"
-                  width={64}
-                  height={64}
-                />
+                {editedAppInfo.icon.startsWith("file://") ? (
+                  <img
+                    src={editedAppInfo.icon}
+                    alt="App Icon"
+                    width={64}
+                    height={64}
+                  />
+                ) : (
+                  <Image
+                    src={editedAppInfo.icon}
+                    alt="App Icon"
+                    width={64}
+                    height={64}
+                  />
+                )}
               </div>
             )}
-            <input
-              type="text"
-              id="icon"
-              name="icon"
-              value={editedAppInfo.icon || ""}
-              onChange={handleChange}
-              placeholder={t("app_icon_placeholder")}
-              className={styles.input}
-            />
+            <div className={styles.iconInputGroup}>
+              <input
+                type="text"
+                id="icon"
+                name="icon"
+                value={editedAppInfo.icon || ""}
+                onChange={handleChange}
+                placeholder={t("app_icon_url_placeholder")}
+                className={styles.input}
+              />
+              <button
+                type="button"
+                onClick={handleSelectIconFile}
+                className={styles.secondaryButtonFile}
+              >
+                {t("choose_file")}
+              </button>
+            </div>
           </div>
 
           <div className={styles.formGroup}>

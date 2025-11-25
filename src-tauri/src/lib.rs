@@ -1,18 +1,19 @@
 use reqwest::Url;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fs;
+use std::io::copy;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
-use sha2::{Digest, Sha256}; // sha2クレートを追加
 
 // アプリケーション情報を格納するための構造体
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)] // Cloneトレイトを追加
 pub struct AppInfo {
-    pub id: String, // idフィールドを追加
+    pub id: String,
     pub name: String,
     pub url: String,
-    pub icon: Option<String>, // URL
+    pub icon: Option<String>, // URLまたはローカルパス
     pub description: Option<String>,
 }
 
@@ -222,9 +223,9 @@ async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
             let mut app_name = "Unknown App".to_string();
             let mut app_icon: Option<String> = None;
             let mut app_description: Option<String> = None;
-            
+
             // ... (名前、アイコン、説明の抽出ロジックは省略せずに実行) ...
-            
+
             // 1. 名前 (Title)
             let title_selector = Selector::parse("title").unwrap();
             if let Some(title_element) = document.select(&title_selector).next() {
@@ -259,7 +260,6 @@ async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
     .await
     .map_err(|e| format!("Failed to run blocking task (info extraction): {}", e))?;
 
-
     // 2. HTMLパース (scraper::Html) - マニフェストURL取得
     // body の新しいクローンと parsed_url のクローンを作成し、ブロッキングタスクにムーブする
     let manifest_url_result: Result<Option<Url>, String> = tokio::task::spawn_blocking({
@@ -280,10 +280,14 @@ async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
         }
     })
     .await
-    .map_err(|e| format!("Failed to run blocking task (manifest URL extraction): {}", e))?;
+    .map_err(|e| {
+        format!(
+            "Failed to run blocking task (manifest URL extraction): {}",
+            e
+        )
+    })?;
 
     let manifest_absolute_url = manifest_url_result?;
-
 
     // 3. マニフェストJSONの取得と解析 (非同期処理)
     let mut final_app_name = app_name;
@@ -314,9 +318,7 @@ async fn get_app_info_from_url(url: String) -> Result<AppInfo, String> {
                     .and_then(|s| s.split('x').next()?.parse::<u32>().ok())
                     .unwrap_or(0)
             }) {
-                if let Ok(icon_url_from_manifest) =
-                    manifest_url.join(&best_icon.src)
-                {
+                if let Ok(icon_url_from_manifest) = manifest_url.join(&best_icon.src) {
                     final_app_icon = Some(icon_url_from_manifest.to_string());
                 }
             }
@@ -369,9 +371,71 @@ async fn delete_app_dir(app_handle: AppHandle, id: String) -> Result<(), String>
         fs::remove_dir_all(&app_dir)
             .map_err(|e| format!("Failed to delete directory {}: {}", app_dir.display(), e))?;
     } else {
-        return Err(format!("Application directory not found: {}", app_dir.display()));
+        return Err(format!(
+            "Application directory not found: {}",
+            app_dir.display()
+        ));
     }
     Ok(())
+}
+
+// ローカルのアイコンファイルをアプリのデータディレクトリに保存する
+// app_idとsource_path (ユーザーが選択したファイルのパス) を引数に取る
+#[tauri::command]
+async fn save_local_icon(
+    app_handle: AppHandle,
+    app_id: String,
+    source_path: String,
+) -> Result<String, String> {
+    let app_data_dir = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    let app_icon_dir = app_data_dir.join("app_icons").join(&app_id);
+    fs::create_dir_all(&app_icon_dir).map_err(|e| {
+        format!(
+            "Failed to create icon directory {}: {}",
+            app_icon_dir.display(),
+            e
+        )
+    })?;
+
+    let source_file_name = PathBuf::from(&source_path)
+        .file_name()
+        .ok_or_else(|| "Invalid source path: cannot get file name".to_string())?
+        .to_string_lossy()
+        .into_owned();
+
+    let destination_path = app_icon_dir.join(&source_file_name);
+
+    let mut source_file = fs::File::open(&source_path)
+        .map_err(|e| format!("Failed to open source icon file {}: {}", source_path, e))?;
+    let mut destination_file = fs::File::create(&destination_path).map_err(|e| {
+        format!(
+            "Failed to create destination icon file {}: {}",
+            destination_path.display(),
+            e
+        )
+    })?;
+
+    copy(&mut source_file, &mut destination_file)
+        .map_err(|e| format!("Failed to copy icon file: {}", e))?;
+
+    // Tauriのカスタムプロトコル (`tauri://localhost/`) を使用して、Webviewからアクセス可能なパスを返す
+    // `app_data_dir`からの相対パスを構築し、それを `tauri://localhost/__tauri_assets__/` にプレフィックスとして追加
+    let relative_path = destination_path
+        .strip_prefix(&app_data_dir)
+        .map_err(|e| format!("Failed to get relative path for icon: {}", e))?
+        .to_string_lossy()
+        .into_owned();
+
+    // Tauri 2では、`__tauri_assets__`プロトコルを使用して`app_data_dir`にアクセスできるため、そのパスを構築して返す。
+    // https://tauri.app/v2/guides/features/asset-protocol/
+    Ok(format!(
+        "tauri://localhost/__tauri_assets__/{}",
+        relative_path
+    ))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -387,6 +451,8 @@ pub fn run() {
             }
             Ok(())
         })
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         // 新しいコマンドを登録
         .invoke_handler(tauri::generate_handler![
             get_web_launcher_dir,
@@ -395,9 +461,10 @@ pub fn run() {
             create_dir,
             write_file,
             exec,
-            get_app_info_from_url, // 修正したコマンド
-            save_app_info, // 新しいコマンドを登録
-            delete_app_dir // 新しいコマンドを登録
+            get_app_info_from_url,
+            save_app_info,
+            delete_app_dir,
+            save_local_icon // 新しいコマンドを登録
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
